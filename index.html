@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хранители данных: Квиз по базам данных</title>
+    <style>
+        :root {
+            --primary: #4cc9f0;
+            --danger: #e94560;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8f9fa;
+            --panel: #334155;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            text-align: center;
+        }
+
+        /* Вводный контекст */
+        .intro-section {
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--panel);
+            padding-bottom: 20px;
+        }
+        .intro-title {
+            color: var(--primary);
+            font-size: 1.6rem;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .intro-text {
+            color: #94a3b8;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+        .role-badge {
+            display: inline-block;
+            background: rgba(76, 201, 240, 0.15);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            border: 1px solid rgba(76, 201, 240, 0.3);
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        #start-screen, #end-screen { display: block; }
+        #quiz-screen { display: none; }
+
+        button.start-btn {
+            background: var(--primary);
+            color: #0f172a;
+            border: none;
+            padding: 15px 30px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
+        }
+        button.start-btn:hover {
+            background: #3b9fe0;
+            transform: scale(1.05);
+        }
+
+        .progress-bar-container {
+            height: 6px;
+            background: #334155;
+            border-radius: 3px;
+            margin: 25px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        #question-number {
+            color: var(--primary);
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+        #question-text {
+            font-size: 1.2rem;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 12px;
+        }
+        .option-btn {
+            background: transparent;
+            border: 2px solid #334155;
+            color: white;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .option-btn:hover { border-color: var(--primary); }
+        .option-btn.correct {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+        .option-btn.wrong {
+            border-color: var(--danger);
+            background: rgba(233, 69, 96, 0.1);
+            color: var(--danger);
+        }
+
+        #feedback {
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+        .feedback-correct { color: #22c55e; }
+        .feedback-wrong { color: var(--danger); }
+
+        #score-display {
+            font-size: 2rem;
+            color: var(--primary);
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .medal {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        button.restart-btn {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        button.restart-btn:hover { background: var(--primary); color: #0f172a; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ЭКРАН СТАРТА: Контекст + кнопка -->
+    <div id="start-screen">
+        <h1>Хранители данных</h1>
+
+        <div class="intro-section">
+            <div class="intro-title">Твоя миссия</div>
+            <p class="intro-text">
+                Ты — младший администратор базы данных. Сервер под угрозой: вирус пытается исказить записи и удалить таблицы. Чтобы спасти данные, нужно правильно ответить на вопросы по основам баз данных и SQL. Каждый верный ответ укрепляет защиту сервера.
+            </p>
+        </div>
+
+        <button class="start-btn" onclick="startQuiz()">Начать игру</button>
+    </div>
+
+    <!-- ЭКРАН КВИЗА -->
+    <div id="quiz-screen">
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <h2 id="question-number"></h2>
+        <p id="question-text"></p>
+        
+        <div class="options-grid" id="options-container"></div>
+        
+        <p id="feedback"></p>
+    </div>
+
+    <!-- ЭКРАН РЕЗУЛЬТАТОВ -->
+    <div id="end-screen" style="display: none;">
+        <h1>Сервер спасён!</h1>
+        <div class="medal" id="medal-emoji"></div>
+        <p>Ты ответил правильно на:</p>
+        <div id="score-display"></div>
+        <p id="result-text" style="margin-bottom: 20px;"></p>
+        <button class="restart-btn" onclick="location.reload()">Сыграть снова</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            question: "Что такое СУБД?",
+            options: [
+                "Система управления бизнес-документами",
+                "Система управления базами данных",
+                "Сервер универсальных данных",
+                "Служба учёта больших данных"
+            ],
+            answer: 1
+        },
+        {
+            question: "В чём разница между полем и записью в таблице?",
+            options: [
+                "Поле — это строка, запись — это столбец",
+                "Поле и запись — это синонимы",
+                "Поле — это столбец (характеристика), запись — это строка (объект)",
+                "Запись — это название таблицы, поле — это фильтр"
+            ],
+            answer: 2
+        },
+        {
+            question: "Какой тип данных лучше всего подходит для хранения цены товара (например, 199.99 руб)?",
+            options: [
+                "Integer (целое число)",
+                "Text (текст)",
+                "Boolean (да/нет)",
+                "Decimal или Float (число с плавающей точкой)"
+            ],
+            answer: 3
+        },
+        {
+            question: "Зачем нужен первичный ключ (Primary Key)?",
+            options: [
+                "Чтобы сделать таблицу красивой",
+                "Чтобы каждая строка была уникальной и её можно было легко найти",
+                "Чтобы скрыть данные от пользователей",
+                "Чтобы увеличить скорость интернета"
+            ],
+            answer: 1
+        },
+        {
+            question: "Какая команда SQL используется для выборки данных из таблицы?",
+            options: [
+                "INSERT",
+                "UPDATE",
+                "SELECT",
+                "DELETE"
+            ],
+            answer: 2
+        },
+        {
+            question: "Что делает оператор WHERE в SQL-запросе?",
+            options: [
+                "Сортирует результаты по алфавиту",
+                "Фильтрует строки, оставляя только те, что подходят под условие",
+                "Создаёт новую таблицу",
+                "Удаляет всю базу данных"
+            ],
+            answer: 1
+        },
+        {
+            question: "Что означает термин 'нормализация базы данных'?",
+            options: [
+                "Превращение текста в картинки",
+                "Удаление всех данных для очистки места",
+                "Организация структуры таблиц для уменьшения избыточности и ошибок",
+                "Увеличение размера базы данных"
+            ],
+            answer: 2
+        },
+        {
+            question: "Что такое внешний ключ (Foreign Key)?",
+            options: [
+                "Ключ, который открывает дверь в серверную",
+                "Ссылка на первичный ключ в другой таблице (для связи данных)",
+                "Пароль для входа в базу данных",
+                "Название столбца с датами"
+            ],
+            answer: 1
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    function startQuiz() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('quiz-screen').style.display = 'block';
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (currentQuestionIndex >= questions.length) {
+            showResults();
+            return;
+        }
+
+        const q = questions[currentQuestionIndex];
+        document.getElementById('question-number').innerText = `Вопрос ${currentQuestionIndex + 1} из ${questions.length}`;
+        document.getElementById('question-text').innerText = q.question;
+        
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+        
+        // Обновляем прогресс-бар
+        const progress = ((currentQuestionIndex) / questions.length) * 100;
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = option;
+            btn.onclick = () => checkAnswer(index, q.answer);
+            optionsContainer.appendChild(btn);
+        });
+
+        document.getElementById('feedback').innerText = '';
+    }
+
+    function checkAnswer(selectedIndex, correctIndex) {
+        const buttons = document.querySelectorAll('.option-btn');
+        const feedback = document.getElementById('feedback');
+
+        buttons.forEach(b => b.disabled = true);
+
+        if (selectedIndex === correctIndex) {
+            score++;
+            buttons[selectedIndex].classList.add('correct');
+            feedback.innerText = 'Верно! Защита сервера усилена.';
+            feedback.className = 'feedback-correct';
+        } else {
+            buttons[selectedIndex].classList.add('wrong');
+            buttons[correctIndex].classList.add('correct');
+            feedback.innerText = 'Ошибка! Вирус пытается проникнуть...';
+            feedback.className = 'feedback-wrong';
+        }
+
+        setTimeout(() => {
+            currentQuestionIndex++;
+            loadQuestion();
+        }, 1500);
+    }
+
+    function showResults() {
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'block';
+
+        const total = questions.length;
+        const scoreEl = document.getElementById('score-display');
+        scoreEl.innerText = `${score} из ${total}`;
+
+        const medalEl = document.getElementById('medal-emoji');
+        const resultText = document.getElementById('result-text');
+
+        if (score === total) {
+            medalEl.innerText = '🏆';
+            resultText.innerText = 'Идеальный результат! Вы настоящий Хранитель данных!';
+        } else if (score >= Math.ceil(total * 0.7)) {
+            medalEl.innerText = '🥈';
+            resultText.innerText = 'Хороший результат. Сервер в безопасности!';
+        } else {
+            medalEl.innerText = '🥉';
+            resultText.innerText = 'Неплохо, но вирус ещё где-то рядом. Попробуйте ещё раз!';
+        }
+    }
+</script>
+
+</body>
+</html>
